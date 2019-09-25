@@ -113,5 +113,5 @@ func (v Values) MaybeDuration(name string) time.Duration {
 }
 
 func (v Values) Pager() *Pager {
-	return NewPager(v)
+	return NewPager(url.Values(v))
 }

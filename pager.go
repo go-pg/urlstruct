@@ -1,5 +1,7 @@
 package urlstruct
 
+import "net/url"
+
 type Pager struct {
 	Limit  int `uf:",nowhere"`
 	Offset int `uf:",nowhere"`
@@ -12,20 +14,22 @@ type Pager struct {
 	stickyErr error
 }
 
-func NewPager(values Values) *Pager {
+func NewPager(values url.Values) *Pager {
 	p := new(Pager)
 	p.stickyErr = p.Decode(values)
 	return p
 }
 
-func (p *Pager) Decode(values Values) error {
-	limit, err := values.Int("limit")
+func (p *Pager) Decode(values url.Values) error {
+	vs := Values(values)
+
+	limit, err := vs.Int("limit")
 	if err != nil {
 		return err
 	}
 	p.Limit = limit
 
-	page, err := values.Int("page")
+	page, err := vs.Int("page")
 	if err != nil {
 		return err
 	}
