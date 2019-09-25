@@ -48,8 +48,8 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 	for i := 0; i < typ.NumField(); i++ {
 		sf := typ.Field(i)
 		if sf.Anonymous {
-			pgTag := sf.Tag.Get("pg")
-			if pgTag == "-" {
+			tag := sf.Tag.Get("urlstruct")
+			if tag == "-" {
 				continue
 			}
 
@@ -66,8 +66,8 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 		}
 
 		if sf.Name == "tableName" {
-			sqlTag := tagparser.Parse(sf.Tag.Get("sql"))
-			name, _ := tagparser.Unquote(sqlTag.Name)
+			tag := tagparser.Parse(sf.Tag.Get("urlstruct"))
+			name, _ := tagparser.Unquote(tag.Name)
 			meta.TableName = name
 			continue
 		}
