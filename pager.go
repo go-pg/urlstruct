@@ -3,13 +3,13 @@ package urlstruct
 import "net/url"
 
 type Pager struct {
-	Limit  int `uf:",nowhere"`
-	Offset int `uf:",nowhere"`
+	Limit  int `urlfilter:",nowhere"`
+	Offset int `urlfilter:",nowhere"`
 
 	// Default max limit is 1000.
-	MaxLimit int `uf:"-"`
+	MaxLimit int `urlfilter:"-"`
 	// Default max offset is 1000000.
-	MaxOffset int `uf:"-"`
+	MaxOffset int `urlfilter:"-"`
 
 	stickyErr error
 }
