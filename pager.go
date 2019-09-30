@@ -1,6 +1,8 @@
 package urlstruct
 
-import "net/url"
+import (
+	"net/url"
+)
 
 type Pager struct {
 	Limit  int `urlstruct:",nowhere"`
@@ -16,11 +18,13 @@ type Pager struct {
 
 func NewPager(values url.Values) *Pager {
 	p := new(Pager)
-	p.stickyErr = p.Decode(values)
+	p.stickyErr = p.UnmarshalValues(values)
 	return p
 }
 
-func (p *Pager) Decode(values url.Values) error {
+var _ Unmarshaler = (*Pager)(nil)
+
+func (p *Pager) UnmarshalValues(values url.Values) error {
 	vs := Values(values)
 
 	limit, err := vs.Int("limit")

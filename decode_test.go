@@ -57,7 +57,7 @@ type Filter struct {
 var _ = Describe("Decode", func() {
 	It("decodes struct from Values", func() {
 		f := &Filter{}
-		err := urlstruct.Decode(f, url.Values{
+		err := urlstruct.Decode(url.Values{
 			"field":      {"one"},
 			"field__neq": {"two"},
 			"field__lt":  {"1"},
@@ -82,7 +82,7 @@ var _ = Describe("Decode", func() {
 			"map][":      {"invalid"},
 
 			"custom": {"custom"},
-		})
+		}, f)
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(f.Field).To(Equal("one"))
@@ -116,30 +116,30 @@ var _ = Describe("Decode", func() {
 
 	It("supports names with suffix `[]`", func() {
 		f := &Filter{}
-		err := urlstruct.Decode(f, url.Values{
+		err := urlstruct.Decode(url.Values{
 			"field[]": {"one"},
-		})
+		}, f)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(f.Field).To(Equal("one"))
 	})
 
 	It("supports names with prefix `:`", func() {
 		f := &Filter{}
-		err := urlstruct.Decode(f, url.Values{
+		err := urlstruct.Decode(url.Values{
 			":field": {"one"},
-		})
+		}, f)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(f.Field).To(Equal("one"))
 	})
 
 	It("decodes sql.Null*", func() {
 		f := &Filter{}
-		err := urlstruct.Decode(f, url.Values{
+		err := urlstruct.Decode(url.Values{
 			"null_bool":    {""},
 			"null_int64":   {""},
 			"null_float64": {""},
 			"null_string":  {""},
-		})
+		}, f)
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(f.NullBool.Valid).To(BeTrue())

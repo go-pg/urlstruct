@@ -16,7 +16,7 @@ func DescribeStruct(typ reflect.Type) *StructInfo {
 	return globalDecoder.DescribeStruct(typ)
 }
 
-func Decode(strct interface{}, values url.Values) error {
+func Decode(values url.Values, strct interface{}) error {
 	return globalDecoder.Decode(strct, values)
 }
 
@@ -65,6 +65,20 @@ func (f *decoder) Decode(strct interface{}, values url.Values) error {
 		err := meta.Decode(v, name, values)
 		if err != nil {
 			return nil
+		}
+	}
+
+	for _, f := range meta.unmarshalers {
+		fv := v.FieldByIndex(f.Index)
+		if fv.Kind() == reflect.Struct {
+			fv = fv.Addr()
+		} else if fv.IsNil() {
+			fv.Set(reflect.New(fv.Type().Elem()))
+		}
+
+		u := fv.Interface().(Unmarshaler)
+		if err := u.UnmarshalValues(values); err != nil {
+			return err
 		}
 	}
 
