@@ -20,7 +20,7 @@ type BookFilter struct {
 	AuthorID int64
 }
 
-func ExampleDecode_filter() {
+func ExampleUnmarshal_filter() {
 	db := pg.Connect(&pg.Options{
 		User:     "postgres",
 		Password: "",
