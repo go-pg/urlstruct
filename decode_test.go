@@ -57,7 +57,7 @@ type Filter struct {
 var _ = Describe("Decode", func() {
 	It("decodes struct from Values", func() {
 		f := &Filter{}
-		err := urlstruct.Decode(url.Values{
+		err := urlstruct.Unmarshal(url.Values{
 			"field":      {"one"},
 			"field__neq": {"two"},
 			"field__lt":  {"1"},
@@ -116,7 +116,7 @@ var _ = Describe("Decode", func() {
 
 	It("supports names with suffix `[]`", func() {
 		f := &Filter{}
-		err := urlstruct.Decode(url.Values{
+		err := urlstruct.Unmarshal(url.Values{
 			"field[]": {"one"},
 		}, f)
 		Expect(err).NotTo(HaveOccurred())
@@ -125,7 +125,7 @@ var _ = Describe("Decode", func() {
 
 	It("supports names with prefix `:`", func() {
 		f := &Filter{}
-		err := urlstruct.Decode(url.Values{
+		err := urlstruct.Unmarshal(url.Values{
 			":field": {"one"},
 		}, f)
 		Expect(err).NotTo(HaveOccurred())
@@ -134,7 +134,7 @@ var _ = Describe("Decode", func() {
 
 	It("decodes sql.Null*", func() {
 		f := &Filter{}
-		err := urlstruct.Decode(url.Values{
+		err := urlstruct.Unmarshal(url.Values{
 			"null_bool":    {""},
 			"null_int64":   {""},
 			"null_float64": {""},

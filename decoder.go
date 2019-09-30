@@ -16,8 +16,8 @@ func DescribeStruct(typ reflect.Type) *StructInfo {
 	return globalDecoder.DescribeStruct(typ)
 }
 
-func Decode(values url.Values, strct interface{}) error {
-	return globalDecoder.Decode(strct, values)
+func Unmarshal(values url.Values, strct interface{}) error {
+	return globalDecoder.Unmarshal(values, strct)
 }
 
 type decoder struct {
@@ -40,8 +40,8 @@ func (f *decoder) DescribeStruct(typ reflect.Type) *StructInfo {
 	return meta
 }
 
-// Decode decodes url values into the struct.
-func (f *decoder) Decode(strct interface{}, values url.Values) error {
+// Unmarshal unmarshals url values into the struct.
+func (f *decoder) Unmarshal(values url.Values, strct interface{}) error {
 	v := reflect.Indirect(reflect.ValueOf(strct))
 	meta := f.DescribeStruct(v.Type())
 
@@ -55,14 +55,14 @@ func (f *decoder) Decode(strct interface{}, values url.Values) error {
 			continue
 		}
 
-		err := meta.Decode(v, name, values)
+		err := meta.decode(v, name, values)
 		if err != nil {
 			return err
 		}
 	}
 
 	for name, values := range maps {
-		err := meta.Decode(v, name, values)
+		err := meta.decode(v, name, values)
 		if err != nil {
 			return nil
 		}

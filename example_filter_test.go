@@ -34,7 +34,7 @@ func ExampleDecode_filter() {
 		"limit":     {"100"},
 	}
 	filter := new(BookFilter)
-	err := urlstruct.Decode(values, filter)
+	err := urlstruct.Unmarshal(values, filter)
 	if err != nil {
 		panic(err)
 	}

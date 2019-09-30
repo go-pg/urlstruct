@@ -32,7 +32,7 @@ func newStructInfo(typ reflect.Type) *StructInfo {
 	return meta
 }
 
-func (s *StructInfo) Decode(strct reflect.Value, name string, values []string) error {
+func (s *StructInfo) decode(strct reflect.Value, name string, values []string) error {
 	name = strings.TrimPrefix(name, ":")
 	name = strings.TrimSuffix(name, "[]")
 
