@@ -1,15 +1,27 @@
 package urlstruct
 
 import (
+	"net/url"
 	"reflect"
 	"strings"
 
 	"github.com/vmihailenco/tagparser"
 )
 
+var unmarshalerType = reflect.TypeOf((*Unmarshaler)(nil)).Elem()
+
+type Unmarshaler interface {
+	UnmarshalValues(url.Values) error
+}
+
+type unmarshalerField struct {
+	Index []int
+}
+
 type StructInfo struct {
-	TableName string
-	Fields    []*Field
+	TableName    string
+	Fields       []*Field
+	unmarshalers []*unmarshalerField
 }
 
 func newStructInfo(typ reflect.Type) *StructInfo {
@@ -61,7 +73,17 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 				continue
 			}
 
-			addFields(meta, sfType, sf.Index)
+			if reflect.PtrTo(sfType).Implements(unmarshalerType) {
+				var idx []int
+				idx = append(idx, baseIndex...)
+				idx = append(idx, sf.Index...)
+				meta.unmarshalers = append(meta.unmarshalers, &unmarshalerField{
+					Index: idx,
+				})
+			} else {
+				addFields(meta, sfType, sf.Index)
+			}
+
 			continue
 		}
 
@@ -77,7 +99,10 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 			continue
 		}
 		if len(baseIndex) > 0 {
-			f.Index = append(baseIndex, f.Index...)
+			var idx []int
+			idx = append(idx, baseIndex...)
+			idx = append(idx, f.Index...)
+			f.Index = idx
 		}
 		meta.Fields = append(meta.Fields, f)
 	}
