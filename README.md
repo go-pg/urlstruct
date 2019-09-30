@@ -1,5 +1,8 @@
 # urlstruct decodes url.Values into structs
 
+[![Build Status](https://travis-ci.org/go-pg/urlstruct.svg?branch=master)](https://travis-ci.org/go-pg/urlstruct)
+[![GoDoc](https://godoc.org/github.com/go-pg/urlstruct?status.svg)](https://godoc.org/github.com/go-pg/urlstruct)
+
 ## Example
 
 Following example decodes URL query `?page=2&limit=100&author_id=123` into a struct and uses [go-pg](https://github.com/go-pg/pg) feature `WhereStruct` to autogenerate WHERE clause:
