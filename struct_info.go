@@ -57,6 +57,7 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 	if baseIndex != nil {
 		baseIndex = baseIndex[:len(baseIndex):len(baseIndex)]
 	}
+
 	for i := 0; i < typ.NumField(); i++ {
 		sf := typ.Field(i)
 		if sf.Anonymous {
@@ -73,15 +74,12 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 				continue
 			}
 
-			if reflect.PtrTo(sfType).Implements(unmarshalerType) {
-				var idx []int
-				idx = append(idx, baseIndex...)
-				idx = append(idx, sf.Index...)
+			addFields(meta, sfType, sf.Index)
+
+			if reflect.PtrTo(typ).Implements(unmarshalerType) {
 				meta.unmarshalers = append(meta.unmarshalers, &unmarshalerField{
-					Index: idx,
+					Index: append(baseIndex, sf.Index...),
 				})
-			} else {
-				addFields(meta, sfType, sf.Index)
 			}
 
 			continue
@@ -99,10 +97,7 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 			continue
 		}
 		if len(baseIndex) > 0 {
-			var idx []int
-			idx = append(idx, baseIndex...)
-			idx = append(idx, f.Index...)
-			f.Index = idx
+			f.Index = append(baseIndex, f.Index...)
 		}
 		meta.Fields = append(meta.Fields, f)
 	}

@@ -5,8 +5,8 @@ import (
 )
 
 type Pager struct {
-	Limit  int `urlstruct:",nowhere"`
-	Offset int `urlstruct:",nowhere"`
+	Limit  int `urlstruct:"-"`
+	Offset int `urlstruct:"-"`
 
 	// Default max limit is 1000.
 	MaxLimit int `urlstruct:"-"`
