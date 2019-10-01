@@ -82,6 +82,9 @@ func (f *decoder) Unmarshal(values url.Values, strct interface{}) error {
 		}
 	}
 
+	if u, ok := strct.(Unmarshaler); ok {
+		return u.UnmarshalValues(values)
+	}
 	return nil
 }
 
