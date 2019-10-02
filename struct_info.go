@@ -8,8 +8,6 @@ import (
 	"github.com/vmihailenco/tagparser"
 )
 
-var unmarshalerType = reflect.TypeOf((*Unmarshaler)(nil)).Elem()
-
 type Unmarshaler interface {
 	UnmarshalValues(url.Values) error
 }
