@@ -19,9 +19,11 @@ type unmarshalerField struct {
 }
 
 type StructInfo struct {
-	TableName    string
-	Fields       []*Field
-	unmarshalers []*unmarshalerField
+	TableName string
+	Fields    []*Field
+
+	isUnmarshaler bool
+	unmarshalers  []*unmarshalerField
 }
 
 func newStructInfo(typ reflect.Type) *StructInfo {
@@ -58,6 +60,8 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 		baseIndex = baseIndex[:len(baseIndex):len(baseIndex)]
 	}
 
+	meta.isUnmarshaler = isUnmarshaler(typ)
+
 	for i := 0; i < typ.NumField(); i++ {
 		sf := typ.Field(i)
 		if sf.Anonymous {
@@ -76,7 +80,7 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 
 			addFields(meta, sfType, sf.Index)
 
-			if reflect.PtrTo(typ).Implements(unmarshalerType) {
+			if isUnmarshaler(reflect.PtrTo(sfType)) {
 				meta.unmarshalers = append(meta.unmarshalers, &unmarshalerField{
 					Index: append(baseIndex, sf.Index...),
 				})
@@ -101,4 +105,23 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 		}
 		meta.Fields = append(meta.Fields, f)
 	}
+}
+
+var (
+	urlValuesType = reflect.TypeOf((*url.Values)(nil)).Elem()
+	errorType     = reflect.TypeOf((*error)(nil)).Elem()
+)
+
+func isUnmarshaler(typ reflect.Type) bool {
+	for i := 0; i < typ.NumMethod(); i++ {
+		meth := typ.Method(i)
+		if meth.Name == "UnmarshalValues" &&
+			meth.Type.NumIn() == 2 &&
+			meth.Type.NumOut() == 1 &&
+			meth.Type.In(1) == urlValuesType &&
+			meth.Type.Out(0) == errorType {
+			return true
+		}
+	}
+	return false
 }

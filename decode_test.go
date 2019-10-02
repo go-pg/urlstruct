@@ -29,7 +29,20 @@ func (f *CustomField) UnmarshalText(text []byte) error {
 	return nil
 }
 
+type SubFilter struct {
+	Count int
+}
+
+var _ urlstruct.Unmarshaler = (*SubFilter)(nil)
+
+func (f *SubFilter) UnmarshalValues(values url.Values) error {
+	f.Count++
+	return nil
+}
+
 type Filter struct {
+	SubFilter
+
 	Field    string
 	FieldNEQ string
 	FieldLT  int8
@@ -153,5 +166,12 @@ var _ = Describe("Decode", func() {
 
 		Expect(f.NullString.Valid).To(BeTrue())
 		Expect(f.NullString.String).To(BeZero())
+	})
+
+	It("calls UnmarshalValues", func() {
+		f := &Filter{}
+		err := urlstruct.Unmarshal(url.Values{}, f)
+		Expect(err).NotTo(HaveOccurred())
+		Expect(f.Count).To(Equal(1))
 	})
 })
