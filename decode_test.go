@@ -42,6 +42,7 @@ func (f *SubFilter) UnmarshalValues(values url.Values) error {
 
 type Filter struct {
 	SubFilter
+	Sub SubFilter
 
 	Field    string
 	FieldNEQ string
@@ -173,5 +174,6 @@ var _ = Describe("Decode", func() {
 		err := urlstruct.Unmarshal(url.Values{}, f)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(f.Count).To(Equal(1))
+		Expect(f.Sub.Count).To(Equal(1))
 	})
 })

@@ -27,11 +27,11 @@ type StructInfo struct {
 }
 
 func newStructInfo(typ reflect.Type) *StructInfo {
-	meta := &StructInfo{
+	sinfo := &StructInfo{
 		Fields: make([]*Field, 0, typ.NumField()),
 	}
-	addFields(meta, typ, nil)
-	return meta
+	addFields(sinfo, typ, nil)
+	return sinfo
 }
 
 func (s *StructInfo) decode(strct reflect.Value, name string, values []string) error {
@@ -55,12 +55,12 @@ func (s *StructInfo) Field(name string) *Field {
 	return nil
 }
 
-func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
+func addFields(sinfo *StructInfo, typ reflect.Type, baseIndex []int) {
 	if baseIndex != nil {
 		baseIndex = baseIndex[:len(baseIndex):len(baseIndex)]
 	}
 
-	meta.isUnmarshaler = isUnmarshaler(typ)
+	sinfo.isUnmarshaler = isUnmarshaler(typ)
 
 	for i := 0; i < typ.NumField(); i++ {
 		sf := typ.Field(i)
@@ -78,10 +78,10 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 				continue
 			}
 
-			addFields(meta, sfType, sf.Index)
+			addFields(sinfo, sfType, sf.Index)
 
 			if isUnmarshaler(reflect.PtrTo(sfType)) {
-				meta.unmarshalers = append(meta.unmarshalers, &unmarshalerField{
+				sinfo.unmarshalers = append(sinfo.unmarshalers, &unmarshalerField{
 					Index: append(baseIndex, sf.Index...),
 				})
 			}
@@ -92,18 +92,23 @@ func addFields(meta *StructInfo, typ reflect.Type, baseIndex []int) {
 		if sf.Name == "tableName" {
 			tag := tagparser.Parse(sf.Tag.Get("urlstruct"))
 			name, _ := tagparser.Unquote(tag.Name)
-			meta.TableName = name
+			sinfo.TableName = name
 			continue
 		}
 
-		f := newField(meta, sf)
-		if f == nil {
-			continue
+		f := newField(sinfo, sf)
+		if f != nil {
+			if len(baseIndex) > 0 {
+				f.Index = append(baseIndex, f.Index...)
+			}
+			sinfo.Fields = append(sinfo.Fields, f)
 		}
-		if len(baseIndex) > 0 {
-			f.Index = append(baseIndex, f.Index...)
+
+		if isUnmarshaler(reflect.PtrTo(sf.Type)) {
+			sinfo.unmarshalers = append(sinfo.unmarshalers, &unmarshalerField{
+				Index: append(baseIndex, sf.Index...),
+			})
 		}
-		meta.Fields = append(meta.Fields, f)
 	}
 }
 
