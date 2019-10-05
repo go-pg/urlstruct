@@ -42,7 +42,8 @@ func (f *SubFilter) UnmarshalValues(values url.Values) error {
 
 type Filter struct {
 	SubFilter
-	Sub SubFilter
+	Sub   SubFilter
+	Count int
 
 	Field    string
 	FieldNEQ string
@@ -68,9 +69,16 @@ type Filter struct {
 	Omit []byte `pg:"-"`
 }
 
+var _ urlstruct.Unmarshaler = (*Filter)(nil)
+
+func (f *Filter) UnmarshalValues(values url.Values) error {
+	f.Count++
+	return nil
+}
+
 var _ = Describe("Decode", func() {
 	It("decodes struct from Values", func() {
-		f := &Filter{}
+		f := new(Filter)
 		err := urlstruct.Unmarshal(url.Values{
 			"field":      {"one"},
 			"field__neq": {"two"},
@@ -129,7 +137,7 @@ var _ = Describe("Decode", func() {
 	})
 
 	It("supports names with suffix `[]`", func() {
-		f := &Filter{}
+		f := new(Filter)
 		err := urlstruct.Unmarshal(url.Values{
 			"field[]": {"one"},
 		}, f)
@@ -138,7 +146,7 @@ var _ = Describe("Decode", func() {
 	})
 
 	It("supports names with prefix `:`", func() {
-		f := &Filter{}
+		f := new(Filter)
 		err := urlstruct.Unmarshal(url.Values{
 			":field": {"one"},
 		}, f)
@@ -147,7 +155,7 @@ var _ = Describe("Decode", func() {
 	})
 
 	It("decodes sql.Null*", func() {
-		f := &Filter{}
+		f := new(Filter)
 		err := urlstruct.Unmarshal(url.Values{
 			"null_bool":    {""},
 			"null_int64":   {""},
@@ -170,10 +178,11 @@ var _ = Describe("Decode", func() {
 	})
 
 	It("calls UnmarshalValues", func() {
-		f := &Filter{}
+		f := new(Filter)
 		err := urlstruct.Unmarshal(url.Values{}, f)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(f.Count).To(Equal(1))
+		Expect(f.SubFilter.Count).To(Equal(1))
 		Expect(f.Sub.Count).To(Equal(1))
 	})
 })

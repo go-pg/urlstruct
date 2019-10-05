@@ -26,7 +26,8 @@ type StructInfo struct {
 
 func newStructInfo(typ reflect.Type) *StructInfo {
 	sinfo := &StructInfo{
-		Fields: make([]*Field, 0, typ.NumField()),
+		Fields:        make([]*Field, 0, typ.NumField()),
+		isUnmarshaler: isUnmarshaler(reflect.PtrTo(typ)),
 	}
 	addFields(sinfo, typ, nil)
 	return sinfo
@@ -57,8 +58,6 @@ func addFields(sinfo *StructInfo, typ reflect.Type, baseIndex []int) {
 	if baseIndex != nil {
 		baseIndex = baseIndex[:len(baseIndex):len(baseIndex)]
 	}
-
-	sinfo.isUnmarshaler = isUnmarshaler(typ)
 
 	for i := 0; i < typ.NumField(); i++ {
 		sf := typ.Field(i)
