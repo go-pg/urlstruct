@@ -10,12 +10,16 @@ import (
 )
 
 type Book struct {
+	tableName struct{} `pg:"alias:b"`
+
 	ID        int64
 	AuthorID  int64
 	CreatedAt time.Time
 }
 
 type BookFilter struct {
+	tableName struct{} `urlstruct:"b"`
+
 	urlstruct.Pager
 	AuthorID int64
 }
@@ -44,9 +48,9 @@ func ExampleUnmarshal_filter() {
 
 	// Following query generates:
 	//
-	// SELECT "book"."id", "book"."author_id", "book"."created_at"
-	// FROM "books" AS "book"
-	// WHERE author_id = 123
+	// SELECT "b"."id", "b"."author_id", "b"."created_at"
+	// FROM "books" AS "b"
+	// WHERE "b".author_id = 123
 	// LIMIT 100 OFFSET 100
 
 	var books []*Book
