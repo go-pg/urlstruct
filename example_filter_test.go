@@ -10,7 +10,7 @@ import (
 )
 
 type Book struct {
-	tableName struct{} `pg:"alias:b"`
+	tableName struct{} `pg:"alias:b"` //nolint:unused,structcheck
 
 	ID        int64
 	AuthorID  int64
@@ -18,7 +18,7 @@ type Book struct {
 }
 
 type BookFilter struct {
-	tableName struct{} `urlstruct:"b"`
+	tableName struct{} `urlstruct:"b"` //nolint:unused,structcheck
 
 	urlstruct.Pager
 	AuthorID int64
