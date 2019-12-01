@@ -18,6 +18,8 @@ func TestGinkgo(t *testing.T) {
 	RunSpecs(t, "urlstruct")
 }
 
+//------------------------------------------------------------------------------
+
 type CustomField struct {
 	S string
 }
@@ -28,6 +30,8 @@ func (f *CustomField) UnmarshalText(text []byte) error {
 	f.S = string(text)
 	return nil
 }
+
+//------------------------------------------------------------------------------
 
 type SubFilter struct {
 	Count int
@@ -40,9 +44,20 @@ func (f *SubFilter) UnmarshalValues(values url.Values) error {
 	return nil
 }
 
+//------------------------------------------------------------------------------
+
+type StructMap struct {
+	Foo   string
+	Bar   string
+	Extra map[string][]string `urlstruct:",unknown"`
+}
+
+//------------------------------------------------------------------------------
+
 type Filter struct {
 	SubFilter
 	Sub   SubFilter
+	SMap  StructMap
 	Count int
 
 	Field    string
@@ -82,6 +97,10 @@ var _ = Describe("Decode", func() {
 	It("decodes struct from Values", func() {
 		f := new(Filter)
 		err := urlstruct.Unmarshal(url.Values{
+			"s_map[foo]":   {"foo_value"},
+			"s_map[bar]":   {"bar_value"},
+			"s_map[hello]": {"world"},
+
 			"field":      {"one"},
 			"field__neq": {"two"},
 			"field__lt":  {"1"},
@@ -110,27 +129,39 @@ var _ = Describe("Decode", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(f).To(Equal(&Filter{
-			SubFilter:    SubFilter{Count: 1},
-			Sub:          SubFilter{Count: 1},
-			Count:        1,
-			Field:        "one",
-			FieldNEQ:     "two",
-			FieldLT:      1,
-			FieldLTE:     2,
-			FieldGT:      3,
-			FieldGTE:     4,
-			Multi:        []string{"one", "two"},
-			MultiNEQ:     []int{3, 4},
+			SubFilter: SubFilter{Count: 1},
+			Sub:       SubFilter{Count: 1},
+			Count:     1,
+
+			SMap: StructMap{
+				Foo:   "foo_value",
+				Bar:   "bar_value",
+				Extra: map[string][]string{"hello": {"world"}},
+			},
+
+			Field:    "one",
+			FieldNEQ: "two",
+			FieldLT:  1,
+			FieldLTE: 2,
+			FieldGT:  3,
+			FieldGTE: 4,
+
+			Multi:    []string{"one", "two"},
+			MultiNEQ: []int{3, 4},
+
 			Time:         time.Unix(0, 0).UTC(),
 			StartTimeGTE: time.Unix(0, 0).UTC(),
-			NullBool:     sql.NullBool{Bool: true, Valid: true},
-			NullInt64:    sql.NullInt64{Int64: 1234, Valid: true},
-			NullFloat64:  sql.NullFloat64{Float64: 1.234, Valid: true},
-			NullString:   sql.NullString{String: "string", Valid: true},
-			Map:          map[string]string{"foo": "bar", "hello": "world"},
-			Custom:       CustomField{S: "custom"},
-			Omit:         nil,
-			Unknown:      map[string][]string{"map][": []string{"invalid"}},
+
+			NullBool:    sql.NullBool{Bool: true, Valid: true},
+			NullInt64:   sql.NullInt64{Int64: 1234, Valid: true},
+			NullFloat64: sql.NullFloat64{Float64: 1.234, Valid: true},
+			NullString:  sql.NullString{String: "string", Valid: true},
+
+			Map:    map[string]string{"foo": "bar", "hello": "world"},
+			Custom: CustomField{S: "custom"},
+			Omit:   nil,
+
+			Unknown: map[string][]string{"map][": []string{"invalid"}},
 		}))
 	})
 

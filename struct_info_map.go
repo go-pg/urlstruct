@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
-	"strings"
 	"sync"
 )
 
@@ -14,8 +13,11 @@ func DescribeStruct(typ reflect.Type) *StructInfo {
 	return globalMap.DescribeStruct(typ)
 }
 
+// Unmarshal unmarshals url values into the struct.
 func Unmarshal(values url.Values, strct interface{}) error {
-	return globalMap.Unmarshal(values, strct)
+	v := reflect.Indirect(reflect.ValueOf(strct))
+	d := newStructDecoder(v)
+	return d.Decode(values)
 }
 
 type structInfoMap struct {
@@ -36,27 +38,4 @@ func (m *structInfoMap) DescribeStruct(typ reflect.Type) *StructInfo {
 		return v.(*StructInfo)
 	}
 	return sinfo
-}
-
-// Unmarshal unmarshals url values into the struct.
-func (m *structInfoMap) Unmarshal(values url.Values, strct interface{}) error {
-	v := reflect.Indirect(reflect.ValueOf(strct))
-	d := &structDecoder{
-		v:     v,
-		sinfo: m.DescribeStruct(v.Type()),
-	}
-	return d.Decode(values)
-}
-
-func mapKey(s string) (name string, key string, ok bool) {
-	ind := strings.IndexByte(s, '[')
-	if ind == -1 || s[len(s)-1] != ']' {
-		return "", "", false
-	}
-	key = s[ind+1 : len(s)-1]
-	if key == "" {
-		return "", "", false
-	}
-	name = s[:ind]
-	return name, key, true
 }

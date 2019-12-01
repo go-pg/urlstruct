@@ -12,10 +12,24 @@ type structDecoder struct {
 	unknownFields *fieldMap
 }
 
+func newStructDecoder(v reflect.Value) *structDecoder {
+	return &structDecoder{
+		v:     v,
+		sinfo: DescribeStruct(v.Type()),
+	}
+}
+
 func (d *structDecoder) Decode(values url.Values) error {
 	var maps map[string][]string
 	for name, values := range values {
 		if name, key, ok := mapKey(name); ok {
+			if mdec := d.mapDecoder(name); mdec != nil {
+				if err := mdec.DecodeField(key, values); err != nil {
+					return err
+				}
+				continue
+			}
+
 			if maps == nil {
 				maps = make(map[string][]string)
 			}
@@ -34,8 +48,8 @@ func (d *structDecoder) Decode(values url.Values) error {
 		}
 	}
 
-	for _, f := range d.sinfo.unmarshalers {
-		fv := d.v.FieldByIndex(f.Index)
+	for _, idx := range d.sinfo.unmarshalerIndexes {
+		fv := d.v.FieldByIndex(idx)
 		if fv.Kind() == reflect.Struct {
 			fv = fv.Addr()
 		} else if fv.IsNil() {
@@ -55,6 +69,13 @@ func (d *structDecoder) Decode(values url.Values) error {
 	return nil
 }
 
+func (d *structDecoder) mapDecoder(name string) *structDecoder {
+	if idx, ok := d.sinfo.structs[name]; ok {
+		return newStructDecoder(d.v.FieldByIndex(idx))
+	}
+	return nil
+}
+
 func (d *structDecoder) DecodeField(name string, values []string) error {
 	name = strings.TrimPrefix(name, ":")
 	name = strings.TrimSuffix(name, "[]")
@@ -71,4 +92,17 @@ func (d *structDecoder) DecodeField(name string, values []string) error {
 		d.unknownFields = newFieldMap(d.v.FieldByIndex(d.sinfo.unknownFieldsIndex))
 	}
 	return d.unknownFields.Decode(name, values)
+}
+
+func mapKey(s string) (name string, key string, ok bool) {
+	ind := strings.IndexByte(s, '[')
+	if ind == -1 || s[len(s)-1] != ']' {
+		return "", "", false
+	}
+	key = s[ind+1 : len(s)-1]
+	if key == "" {
+		return "", "", false
+	}
+	name = s[:ind]
+	return name, key, true
 }
