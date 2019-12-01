@@ -35,28 +35,34 @@ type Field struct {
 	required bool
 	noWhere  bool
 
-	scanValue   ScannerFunc
+	scanValue   scannerFunc
 	isZeroValue zerochecker.Func
 }
 
-func newField(meta *StructInfo, sf reflect.StructField) *Field {
+func newField(meta *StructInfo, sf reflect.StructField, baseIndex []int) *Field {
+	tag := tagparser.Parse(sf.Tag.Get("urlstruct"))
+	if tag.Name == "-" {
+		return nil
+	}
+
+	if _, ok := tag.Options["unknown"]; ok {
+		meta.unknownFieldsIndex = append(baseIndex, sf.Index...)
+		return nil
+	}
+
 	f := &Field{
 		Type:  sf.Type,
 		Name:  sf.Name,
-		Index: sf.Index,
+		Index: append(baseIndex, sf.Index...),
 	}
 
-	ufTag := tagparser.Parse(sf.Tag.Get("urlstruct"))
-	if ufTag.Name == "-" {
-		return nil
-	}
-	if ufTag.Name != "" {
-		f.Name = ufTag.Name
+	if tag.Name != "" {
+		f.Name = tag.Name
 	}
 
-	_, f.required = ufTag.Options["required"]
-	_, f.noDecode = ufTag.Options["nodecode"]
-	_, f.noWhere = ufTag.Options["nowhere"]
+	_, f.required = tag.Options["required"]
+	_, f.noDecode = tag.Options["nodecode"]
+	_, f.noWhere = tag.Options["nowhere"]
 	if f.required && f.noWhere {
 		err := fmt.Errorf("urlstruct: required and nowhere tags can't be set together")
 		panic(err)

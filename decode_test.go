@@ -19,13 +19,13 @@ func TestGinkgo(t *testing.T) {
 }
 
 type CustomField struct {
-	s string
+	S string
 }
 
 var _ encoding.TextUnmarshaler = (*CustomField)(nil)
 
 func (f *CustomField) UnmarshalText(text []byte) error {
-	f.s = string(text)
+	f.S = string(text)
 	return nil
 }
 
@@ -67,6 +67,8 @@ type Filter struct {
 	Custom CustomField
 
 	Omit []byte `pg:"-"`
+
+	Unknown map[string][]string `urlstruct:",unknown"`
 }
 
 var _ urlstruct.Unmarshaler = (*Filter)(nil)
@@ -107,33 +109,29 @@ var _ = Describe("Decode", func() {
 		}, f)
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(f.Field).To(Equal("one"))
-		Expect(f.FieldNEQ).To(Equal("two"))
-		Expect(f.FieldLT).To(Equal(int8(1)))
-		Expect(f.FieldLTE).To(Equal(int16(2)))
-		Expect(f.FieldGT).To(Equal(int32(3)))
-		Expect(f.FieldGTE).To(Equal(int64(4)))
-
-		Expect(f.Multi).To(Equal([]string{"one", "two"}))
-		Expect(f.MultiNEQ).To(Equal([]int{3, 4}))
-
-		Expect(f.Time).To(BeTemporally("==", time.Unix(0, 0)))
-		Expect(f.StartTimeGTE).To(BeTemporally("==", time.Unix(0, 0)))
-
-		Expect(f.NullBool.Valid).To(BeTrue())
-		Expect(f.NullBool.Bool).To(BeTrue())
-
-		Expect(f.NullInt64.Valid).To(BeTrue())
-		Expect(f.NullInt64.Int64).To(Equal(int64(1234)))
-
-		Expect(f.NullFloat64.Valid).To(BeTrue())
-		Expect(f.NullFloat64.Float64).To(Equal(float64(1.234)))
-
-		Expect(f.NullString.Valid).To(BeTrue())
-		Expect(f.NullString.String).To(Equal("string"))
-
-		Expect(f.Map).To(Equal(map[string]string{"foo": "bar", "hello": "world"}))
-		Expect(f.Custom.s).To(Equal("custom"))
+		Expect(f).To(Equal(&Filter{
+			SubFilter:    SubFilter{Count: 1},
+			Sub:          SubFilter{Count: 1},
+			Count:        1,
+			Field:        "one",
+			FieldNEQ:     "two",
+			FieldLT:      1,
+			FieldLTE:     2,
+			FieldGT:      3,
+			FieldGTE:     4,
+			Multi:        []string{"one", "two"},
+			MultiNEQ:     []int{3, 4},
+			Time:         time.Unix(0, 0).UTC(),
+			StartTimeGTE: time.Unix(0, 0).UTC(),
+			NullBool:     sql.NullBool{Bool: true, Valid: true},
+			NullInt64:    sql.NullInt64{Int64: 1234, Valid: true},
+			NullFloat64:  sql.NullFloat64{Float64: 1.234, Valid: true},
+			NullString:   sql.NullString{String: "string", Valid: true},
+			Map:          map[string]string{"foo": "bar", "hello": "world"},
+			Custom:       CustomField{S: "custom"},
+			Omit:         nil,
+			Unknown:      map[string][]string{"map][": []string{"invalid"}},
+		}))
 	})
 
 	It("supports names with suffix `[]`", func() {

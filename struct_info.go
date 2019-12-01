@@ -3,7 +3,6 @@ package urlstruct
 import (
 	"net/url"
 	"reflect"
-	"strings"
 
 	"github.com/vmihailenco/tagparser"
 )
@@ -16,12 +15,15 @@ type unmarshalerField struct {
 	Index []int
 }
 
+//------------------------------------------------------------------------------
+
 type StructInfo struct {
 	TableName string
 	Fields    []*Field
 
-	isUnmarshaler bool
-	unmarshalers  []*unmarshalerField
+	unknownFieldsIndex []int
+	isUnmarshaler      bool
+	unmarshalers       []*unmarshalerField
 }
 
 func newStructInfo(typ reflect.Type) *StructInfo {
@@ -31,17 +33,6 @@ func newStructInfo(typ reflect.Type) *StructInfo {
 	}
 	addFields(sinfo, typ, nil)
 	return sinfo
-}
-
-func (s *StructInfo) decode(strct reflect.Value, name string, values []string) error {
-	name = strings.TrimPrefix(name, ":")
-	name = strings.TrimSuffix(name, "[]")
-
-	field := s.Field(name)
-	if field == nil || field.noDecode {
-		return nil
-	}
-	return field.scanValue(field.Value(strct), values)
 }
 
 func (s *StructInfo) Field(name string) *Field {
@@ -93,11 +84,8 @@ func addFields(sinfo *StructInfo, typ reflect.Type, baseIndex []int) {
 			continue
 		}
 
-		f := newField(sinfo, sf)
+		f := newField(sinfo, sf, baseIndex)
 		if f != nil {
-			if len(baseIndex) > 0 {
-				f.Index = append(baseIndex, f.Index...)
-			}
 			sinfo.Fields = append(sinfo.Fields, f)
 		}
 
@@ -108,6 +96,8 @@ func addFields(sinfo *StructInfo, typ reflect.Type, baseIndex []int) {
 		}
 	}
 }
+
+//------------------------------------------------------------------------------
 
 var (
 	urlValuesType = reflect.TypeOf((*url.Values)(nil)).Elem()
@@ -126,4 +116,26 @@ func isUnmarshaler(typ reflect.Type) bool {
 		}
 	}
 	return false
+}
+
+//------------------------------------------------------------------------------
+
+var mapType = reflect.TypeOf((*map[string][]string)(nil)).Elem()
+
+type fieldMap struct {
+	m map[string][]string
+}
+
+func newFieldMap(v reflect.Value) *fieldMap {
+	if v.IsNil() {
+		v.Set(reflect.MakeMap(mapType))
+	}
+	return &fieldMap{
+		m: v.Interface().(map[string][]string),
+	}
+}
+
+func (fm fieldMap) Decode(name string, values []string) error {
+	fm.m[name] = values
+	return nil
 }
