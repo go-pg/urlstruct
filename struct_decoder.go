@@ -22,6 +22,9 @@ func newStructDecoder(v reflect.Value) *structDecoder {
 func (d *structDecoder) Decode(values url.Values) error {
 	var maps map[string][]string
 	for name, values := range values {
+		name = strings.TrimPrefix(name, ":")
+		name = strings.TrimSuffix(name, "[]")
+
 		if name, key, ok := mapKey(name); ok {
 			if mdec := d.mapDecoder(name); mdec != nil {
 				if err := mdec.DecodeField(key, values); err != nil {
@@ -77,9 +80,6 @@ func (d *structDecoder) mapDecoder(name string) *structDecoder {
 }
 
 func (d *structDecoder) DecodeField(name string, values []string) error {
-	name = strings.TrimPrefix(name, ":")
-	name = strings.TrimSuffix(name, "[]")
-
 	if field := d.sinfo.Field(name); field != nil && !field.noDecode {
 		return field.scanValue(field.Value(d.v), values)
 	}
