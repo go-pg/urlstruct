@@ -65,7 +65,7 @@ func (f *Field) Value(strct reflect.Value) reflect.Value {
 }
 
 func (f *Field) Omit(value reflect.Value) bool {
-	return !f.required && f.noWhere || f.isZeroValue(value)
+	return !f.required && (f.noWhere || f.isZeroValue(value))
 }
 
 func splitColumnOperator(s, sep string) (string, OpCode) {
