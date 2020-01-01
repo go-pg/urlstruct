@@ -47,6 +47,10 @@ func (s *StructInfo) Field(name string) *Field {
 func addFields(sinfo *StructInfo, typ reflect.Type, baseIndex []int) {
 	for i := 0; i < typ.NumField(); i++ {
 		sf := typ.Field(i)
+		if sf.PkgPath != "" && !sf.Anonymous {
+			continue
+		}
+
 		if sf.Anonymous {
 			tag := sf.Tag.Get("urlstruct")
 			if tag == "-" {

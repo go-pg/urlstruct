@@ -55,6 +55,8 @@ type StructMap struct {
 //------------------------------------------------------------------------------
 
 type Filter struct {
+	unexported string
+
 	SubFilter
 	Sub   SubFilter
 	SMap  StructMap
