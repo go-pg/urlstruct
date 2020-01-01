@@ -55,7 +55,7 @@ type StructMap struct {
 //------------------------------------------------------------------------------
 
 type Filter struct {
-	unexported string
+	unexported string //nolint:unused,structcheck
 
 	SubFilter
 	Sub   SubFilter
@@ -99,6 +99,8 @@ var _ = Describe("Decode", func() {
 	It("decodes struct from Values", func() {
 		f := new(Filter)
 		err := urlstruct.Unmarshal(url.Values{
+			"unexported": {"test"},
+
 			"s_map[foo]":   {"foo_value"},
 			"s_map[bar]":   {"bar_value"},
 			"s_map[hello]": {"world"},
@@ -163,7 +165,10 @@ var _ = Describe("Decode", func() {
 			Custom: CustomField{S: "custom"},
 			Omit:   nil,
 
-			Unknown: map[string][]string{"map][": []string{"invalid"}},
+			Unknown: map[string][]string{
+				"unexported": {"test"},
+				"map][":      {"invalid"},
+			},
 		}))
 	})
 
