@@ -9,7 +9,7 @@ import (
 )
 
 type MyStruct struct {
-	tableName struct{} `urlstruct:"myname"`
+	tableName struct{} `urlstruct:"myname"` //nolint:structcheck,unused
 }
 
 var _ = Describe("DescribeStruct", func() {
