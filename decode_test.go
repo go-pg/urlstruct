@@ -1,6 +1,7 @@
 package urlstruct_test
 
 import (
+	"context"
 	"database/sql"
 	"encoding"
 	"net/url"
@@ -39,7 +40,7 @@ type SubFilter struct {
 
 var _ urlstruct.Unmarshaler = (*SubFilter)(nil)
 
-func (f *SubFilter) UnmarshalValues(values url.Values) error {
+func (f *SubFilter) UnmarshalValues(ctx context.Context, values url.Values) error {
 	f.Count++
 	return nil
 }
@@ -90,15 +91,17 @@ type Filter struct {
 
 var _ urlstruct.Unmarshaler = (*Filter)(nil)
 
-func (f *Filter) UnmarshalValues(values url.Values) error {
+func (f *Filter) UnmarshalValues(ctx context.Context, values url.Values) error {
 	f.Count++
 	return nil
 }
 
 var _ = Describe("Decode", func() {
+	ctx := context.TODO()
+
 	It("decodes struct from Values", func() {
 		f := new(Filter)
-		err := urlstruct.Unmarshal(url.Values{
+		err := urlstruct.Unmarshal(ctx, url.Values{
 			"unexported": {"test"},
 
 			"s_map[foo]":   {"foo_value"},
@@ -174,7 +177,7 @@ var _ = Describe("Decode", func() {
 
 	It("supports names with suffix `[]`", func() {
 		f := new(Filter)
-		err := urlstruct.Unmarshal(url.Values{
+		err := urlstruct.Unmarshal(ctx, url.Values{
 			"field[]": {"one"},
 		}, f)
 		Expect(err).NotTo(HaveOccurred())
@@ -183,7 +186,7 @@ var _ = Describe("Decode", func() {
 
 	It("supports names with prefix `:`", func() {
 		f := new(Filter)
-		err := urlstruct.Unmarshal(url.Values{
+		err := urlstruct.Unmarshal(ctx, url.Values{
 			":field": {"one"},
 		}, f)
 		Expect(err).NotTo(HaveOccurred())
@@ -192,7 +195,7 @@ var _ = Describe("Decode", func() {
 
 	It("decodes sql.Null*", func() {
 		f := new(Filter)
-		err := urlstruct.Unmarshal(url.Values{
+		err := urlstruct.Unmarshal(ctx, url.Values{
 			"null_bool":    {""},
 			"null_int64":   {""},
 			"null_float64": {""},
@@ -215,7 +218,7 @@ var _ = Describe("Decode", func() {
 
 	It("calls UnmarshalValues", func() {
 		f := new(Filter)
-		err := urlstruct.Unmarshal(url.Values{}, f)
+		err := urlstruct.Unmarshal(ctx, url.Values{}, f)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(f.Count).To(Equal(1))
 		Expect(f.SubFilter.Count).To(Equal(1))

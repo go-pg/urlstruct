@@ -1,6 +1,7 @@
 package urlstruct_test
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"time"
@@ -38,7 +39,7 @@ func ExampleUnmarshal_filter() {
 		"limit":     {"100"},
 	}
 	filter := new(BookFilter)
-	err := urlstruct.Unmarshal(values, filter)
+	err := urlstruct.Unmarshal(context.TODO(), values, filter)
 	if err != nil {
 		panic(err)
 	}
