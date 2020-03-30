@@ -48,9 +48,19 @@ func (f *SubFilter) UnmarshalValues(ctx context.Context, values url.Values) erro
 //------------------------------------------------------------------------------
 
 type StructMap struct {
-	Foo   string
-	Bar   string
-	Extra map[string][]string `urlstruct:",unknown"`
+	Foo        string
+	Bar        string
+	UnknownMap map[string][]string `urlstruct:",unknown"`
+}
+
+var _ urlstruct.ParamUnmarshaler = (*StructMap)(nil)
+
+func (s *StructMap) UnmarshalParam(ctx context.Context, name string, values []string) error {
+	if s.UnknownMap == nil {
+		s.UnknownMap = make(map[string][]string)
+	}
+	s.UnknownMap[name] = values
+	return nil
 }
 
 //------------------------------------------------------------------------------
@@ -85,8 +95,6 @@ type Filter struct {
 	Custom CustomField
 
 	Omit []byte `pg:"-"`
-
-	Unknown map[string][]string `urlstruct:",unknown"`
 }
 
 var _ urlstruct.Unmarshaler = (*Filter)(nil)
@@ -141,9 +149,9 @@ var _ = Describe("Decode", func() {
 			Count:     1,
 
 			SMap: StructMap{
-				Foo:   "foo_value",
-				Bar:   "bar_value",
-				Extra: map[string][]string{"hello": {"world"}},
+				Foo:        "foo_value",
+				Bar:        "bar_value",
+				UnknownMap: map[string][]string{"hello": {"world"}},
 			},
 
 			Field:    "one",
@@ -167,11 +175,6 @@ var _ = Describe("Decode", func() {
 			Map:    map[string]string{"foo": "bar", "hello": "world"},
 			Custom: CustomField{S: "custom"},
 			Omit:   nil,
-
-			Unknown: map[string][]string{
-				"unexported": {"test"},
-				"map][":      {"invalid"},
-			},
 		}))
 	})
 
