@@ -116,18 +116,18 @@ var _ = Describe("Decode", func() {
 			"s_map[bar]":   {"bar_value"},
 			"s_map[hello]": {"world"},
 
-			"field":      {"one"},
-			"field__neq": {"two"},
-			"field__lt":  {"1"},
-			"field__lte": {"2"},
-			"field__gt":  {"3"},
-			"field__gte": {"4"},
+			"field":     {"one"},
+			"field_neq": {"two"},
+			"field_lt":  {"1"},
+			"field_lte": {"2"},
+			"field_gt":  {"3"},
+			"field_gte": {"4"},
 
-			"multi":      {"one", "two"},
-			"multi__neq": {"3", "4"},
+			"multi":     {"one", "two"},
+			"multi_neq": {"3", "4"},
 
-			"time":            {"1970-01-01T00:00:00Z"},
-			"start_time__gte": {"1970-01-01T00:00:00Z"},
+			"time":           {"1970-01-01T00:00:00Z"},
+			"start_time_gte": {"1970-01-01T00:00:00Z"},
 
 			"null_bool":    {"t"},
 			"null_int64":   {"1234"},

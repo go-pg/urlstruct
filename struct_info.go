@@ -20,9 +20,10 @@ type ParamUnmarshaler interface {
 //------------------------------------------------------------------------------
 
 type StructInfo struct {
-	TableName string
-	Fields    []*Field
-	structs   map[string][]int
+	fields   []*Field
+	fieldMap map[string]*Field
+
+	structs map[string][]int
 
 	isUnmarshaler      bool
 	isParamUnmarshaler bool
@@ -31,7 +32,9 @@ type StructInfo struct {
 
 func newStructInfo(typ reflect.Type) *StructInfo {
 	sinfo := &StructInfo{
-		Fields:             make([]*Field, 0, typ.NumField()),
+		fields:   make([]*Field, 0, typ.NumField()),
+		fieldMap: make(map[string]*Field),
+
 		isUnmarshaler:      isUnmarshaler(reflect.PtrTo(typ)),
 		isParamUnmarshaler: isParamUnmarshaler(reflect.PtrTo(typ)),
 	}
@@ -40,30 +43,12 @@ func newStructInfo(typ reflect.Type) *StructInfo {
 }
 
 func (s *StructInfo) Field(name string) *Field {
-	col, op := splitColumnOperator(name, "__")
-	for _, f := range s.Fields {
-		if f.Column == col && f.Op == op {
-			return f
-		}
-	}
-	return nil
+	return s.fieldMap[name]
 }
 
 func addFields(sinfo *StructInfo, typ reflect.Type, baseIndex []int) {
 	for i := 0; i < typ.NumField(); i++ {
 		sf := typ.Field(i)
-
-		if sf.Name == "tableName" {
-			tag := tagparser.Parse(sf.Tag.Get("urlstruct"))
-			if tag.Name == "-" {
-				continue
-			}
-
-			name, _ := tagparser.Unquote(tag.Name)
-			sinfo.TableName = name
-			continue
-		}
-
 		if sf.PkgPath != "" && !sf.Anonymous {
 			continue
 		}
@@ -119,13 +104,15 @@ func addField(sinfo *StructInfo, sf reflect.StructField, baseIndex []int) {
 
 	f := &Field{
 		Type:  sf.Type,
-		Name:  name,
+		Name:  kace.Snake(name),
 		Index: index,
 		Tag:   tag,
 	}
 	f.init()
+
 	if f.scanValue != nil {
-		sinfo.Fields = append(sinfo.Fields, f)
+		sinfo.fields = append(sinfo.fields, f)
+		sinfo.fieldMap[f.Name] = f
 	}
 }
 
