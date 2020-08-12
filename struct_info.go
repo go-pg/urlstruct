@@ -124,7 +124,7 @@ func addField(sinfo *StructInfo, sf reflect.StructField, baseIndex []int) {
 		Tag:   tag,
 	}
 	f.init()
-	if f.scanValue != nil && f.isZeroValue != nil {
+	if f.scanValue != nil {
 		sinfo.Fields = append(sinfo.Fields, f)
 	}
 }

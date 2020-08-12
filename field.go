@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/codemodus/kace"
-	"github.com/go-pg/zerochecker"
 	"github.com/vmihailenco/tagparser"
 )
 
@@ -36,8 +35,7 @@ type Field struct {
 	required bool
 	noWhere  bool
 
-	scanValue   scannerFunc
-	isZeroValue zerochecker.Func
+	scanValue scannerFunc
 }
 
 func (f *Field) init() {
@@ -57,15 +55,10 @@ func (f *Field) init() {
 	} else {
 		f.scanValue = scanner(f.Type)
 	}
-	f.isZeroValue = zerochecker.Checker(f.Type)
 }
 
 func (f *Field) Value(strct reflect.Value) reflect.Value {
 	return strct.FieldByIndex(f.Index)
-}
-
-func (f *Field) Omit(value reflect.Value) bool {
-	return !f.required && (f.noWhere || f.isZeroValue(value))
 }
 
 func splitColumnOperator(s, sep string) (string, OpCode) {
