@@ -160,7 +160,18 @@ func parseTime(s string) (time.Time, error) {
 	if err == nil {
 		return time.Unix(n, 0), nil
 	}
-	return time.Parse(time.RFC3339Nano, s)
+
+	if len(s) >= 5 && s[4] == '-' {
+		return time.Parse(time.RFC3339Nano, s)
+	}
+
+	if len(s) == 15 {
+		const basicFormat = "20060102T150405"
+		return time.Parse(basicFormat, s)
+	}
+
+	const basicFormat = "20060102T150405-07:00"
+	return time.Parse(basicFormat, s)
 }
 
 func scanDuration(v reflect.Value, values []string) error {
