@@ -6,11 +6,14 @@ import (
 )
 
 type Pager struct {
-	Limit  int `urlstruct:"-"`
-	Offset int `urlstruct:"-"`
+	Limit  int
+	Offset int
 
-	// Default max limit is 1000.
+	// Default is 100.
+	DefaultLimit int `urlstruct:"-"`
+	// Default is 1000.
 	MaxLimit int `urlstruct:"-"`
+
 	// Default max offset is 1000000.
 	MaxOffset int `urlstruct:"-"`
 
@@ -67,7 +70,10 @@ func (p *Pager) GetLimit() int {
 		return p.Limit
 	}
 	if p.Limit == 0 {
-		return defaultLimit
+		if p.DefaultLimit == 0 {
+			return defaultLimit
+		}
+		return p.DefaultLimit
 	}
 	if p.Limit > p.maxLimit() {
 		return p.maxLimit()
