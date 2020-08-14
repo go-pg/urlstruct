@@ -12,9 +12,7 @@ type Field struct {
 	Index []int
 	Tag   *tagparser.Tag
 
-	noDecode bool
-	noWhere  bool
-
+	noDecode  bool
 	scanValue scannerFunc
 }
 
