@@ -77,6 +77,24 @@ func sliceScanner(typ reflect.Type) scannerFunc {
 	case reflect.String:
 		return scanStringSlice
 	}
+
+	if elementScanner := scanner(typ.Elem()); elementScanner != nil {
+		return func(v reflect.Value, values []string) error {
+			nn := reflect.MakeSlice(typ, 0, len(values))
+			for _, s := range values {
+				n := reflect.New(typ.Elem())
+				err := elementScanner(n.Elem(), []string{s})
+				if err != nil {
+					return err
+				}
+				nn = reflect.Append(nn, n.Elem())
+			}
+			v.Set(nn)
+
+			return nil
+		}
+	}
+
 	return nil
 }
 
