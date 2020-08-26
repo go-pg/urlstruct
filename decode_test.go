@@ -12,6 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/go-pg/urlstruct"
+	"github.com/google/uuid"
 )
 
 func TestGinkgo(t *testing.T) {
@@ -95,6 +96,8 @@ type Filter struct {
 	Custom CustomField
 
 	Omit []byte `pg:"-"`
+
+	Uuid []uuid.UUID
 }
 
 var _ urlstruct.Unmarshaler = (*Filter)(nil)
@@ -140,6 +143,8 @@ var _ = Describe("Decode", func() {
 			"map][":      {"invalid"},
 
 			"custom": {"custom"},
+
+			"uuid": {"3fa85f64-5717-4562-b3fc-2c963f66afa6"},
 		}, f)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -175,6 +180,7 @@ var _ = Describe("Decode", func() {
 			Map:    map[string]string{"foo": "bar", "hello": "world"},
 			Custom: CustomField{S: "custom"},
 			Omit:   nil,
+			Uuid:   []uuid.UUID{uuid.MustParse("3fa85f64-5717-4562-b3fc-2c963f66afa6")},
 		}))
 	})
 
