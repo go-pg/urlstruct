@@ -33,6 +33,7 @@ github.com/go-pg/pg/v10 v10.0.1/go.mod h1:rfIarQ3lIylPqz362IR6XvexOG++pGxSilwkKF
 github.com/go-pg/pg/v10 v10.0.3/go.mod h1:8mKn2zmanO72i4drlNaM4tnAxAbfm3HdYcwhrh+44y8=
 github.com/go-pg/pg/v10 v10.0.4/go.mod h1:8mKn2zmanO72i4drlNaM4tnAxAbfm3HdYcwhrh+44y8=
 github.com/go-pg/pg/v10 v10.0.5/go.mod h1:sZ4iLl8yeQY+URTi7qcfE88J4kRGKQ8rJN1lN3OkKn4=
+github.com/go-pg/pg/v10 v10.0.6/go.mod h1:sZ4iLl8yeQY+URTi7qcfE88J4kRGKQ8rJN1lN3OkKn4=
 github.com/go-pg/pg/v9 v9.0.0-beta.14 h1:52D0w+oMqEPGf/dvg9Ni98NP5LlJHpqRAxPnHvw0EhM=
 github.com/go-pg/pg/v9 v9.0.0-beta.14/go.mod h1:T2Sr6bpTCOr2lUqOUMiXLMJqZHSUBKk1LdgSqjwhZfA=
 github.com/go-pg/pg/v9 v9.0.3 h1:dhOAOLlTJJpqeAfRpjZYTV6zf7dmUOnjCkZqjOBYmu0=
