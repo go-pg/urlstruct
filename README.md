@@ -5,7 +5,7 @@
 
 ## Example
 
-Following example decodes URL query `?page=2&limit=100&author_id=123` into a struct and uses [go-pg](https://github.com/go-pg/pg) feature `WhereStruct` to autogenerate WHERE clause:
+Following example decodes URL query `?page=2&limit=100&author_id=123` into a struct.
 
 ```go
 type Book struct {

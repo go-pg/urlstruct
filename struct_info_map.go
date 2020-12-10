@@ -1,9 +1,7 @@
 package urlstruct
 
 import (
-	"context"
 	"fmt"
-	"net/url"
 	"reflect"
 	"sync"
 )
@@ -12,12 +10,6 @@ var globalMap structInfoMap
 
 func DescribeStruct(typ reflect.Type) *StructInfo {
 	return globalMap.DescribeStruct(typ)
-}
-
-// Unmarshal unmarshals url values into the struct.
-func Unmarshal(ctx context.Context, values url.Values, strct interface{}) error {
-	d := newStructDecoder(reflect.ValueOf(strct))
-	return d.Decode(ctx, values)
 }
 
 type structInfoMap struct {
