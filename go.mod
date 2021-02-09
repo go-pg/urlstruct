@@ -9,7 +9,7 @@ require (
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/onsi/ginkgo v1.14.1
 	github.com/onsi/gomega v1.10.2
-	github.com/vmihailenco/tagparser v0.1.2
+	github.com/vmihailenco/tagparser/v2/v2 v2.0.0
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
 	golang.org/x/sys v0.0.0-20200908134130-d2e65c121b96 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
